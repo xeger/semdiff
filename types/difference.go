@@ -53,7 +53,7 @@ func NewChangeSet(details []*Change) *ChangeSet {
 
 	typeItems := make([]string, 0, len(types))
 	for t, c := range types {
-		typeItems = append(typeItems, fmt.Sprintf("%d %s", c, t))
+		typeItems = append(typeItems, fmt.Sprintf("%s (%d)", t, c))
 	}
 	result.Type = strings.Join(typeItems, ", ")
 

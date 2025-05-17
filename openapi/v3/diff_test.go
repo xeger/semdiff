@@ -1,7 +1,6 @@
 package v3_test
 
 import (
-	"encoding/json"
 	"os"
 	"testing"
 
@@ -18,12 +17,12 @@ func loadSpec(t *testing.T, name string) *v3.OpenAPI {
 	}
 	defer file.Close()
 
-	var spec v3.OpenAPI
-	if err := json.NewDecoder(file).Decode(&spec); err != nil {
-		t.Fatalf("failed to decode spec: %v", err)
+	if spec, err := v3.Unmarshal(file); err != nil {
+		t.Fatalf("bad testdata file: %s", name)
+		return nil
+	} else {
+		return spec
 	}
-
-	return &spec
 }
 
 func TestDiff(t *testing.T) {
