@@ -1,0 +1,4 @@
+# TODO: synthetic non-proprietary testdata that we can commit to Git
+*.json
+*.yaml
+*.yml
