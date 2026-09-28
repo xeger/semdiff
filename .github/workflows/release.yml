@@ -1,0 +1,43 @@
+name: Release
+
+# Publishing a GitHub release attaches static binaries for every platform as
+# semdiff_<tag>_<GOOS>_<GOARCH>.tar.gz, each containing semdiff (semdiff.exe
+# on Windows). Launchers such as xn install tools from assets named this way.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write  # Required for uploading assets
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Build static archives
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for target in darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64 windows/arm64; do
+            os=${target%/*}
+            arch=${target#*/}
+            exe=semdiff
+            [ "$os" = windows ] && exe=semdiff.exe
+            stage=$(mktemp -d)
+            CGO_ENABLED=0 GOOS=$os GOARCH=$arch go build -trimpath -o "$stage/$exe" ./cmd/semdiff
+            tar -czf "dist/semdiff_${TAG}_${os}_${arch}.tar.gz" -C "$stage" "$exe"
+            rm -rf "$stage"
+          done
+          ls -la dist
+      - name: Upload archives to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" dist/*.tar.gz --clobber --repo "${{ github.repository }}"
