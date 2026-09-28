@@ -1,6 +1,8 @@
 package v3_test
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"testing"
 
@@ -12,6 +14,10 @@ func loadSpec(t *testing.T, name string) *v3.OpenAPI {
 	t.Helper()
 
 	file, err := os.Open("testdata/" + name)
+	if errors.Is(err, fs.ErrNotExist) {
+		// The specs are proprietary and gitignored; see testdata/.gitignore.
+		t.Skipf("testdata/%s not present", name)
+	}
 	if err != nil {
 		t.Fatalf("failed to open spec: %v", err)
 	}
